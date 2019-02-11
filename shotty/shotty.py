@@ -87,7 +87,7 @@ def instance():
 @click.option('--project', default=None,
     help='Only instances for project(tag Project: <name>)')
 @click.option('--force',default=False, is_flag=True,
-    help='Force flag needed to force stop the instances')
+    help='Force flag needed to force snapshot the instances')
 def create_snapshots(project,force):
     "Create snapshots for Ec2 instances"
 
@@ -181,19 +181,21 @@ def start_instances(project,force):
 @instance.command('reboot')
 @click.option('--project', default=None,
     help='Only instances for project')
+@click.option('--force',default=False, is_flag=True,
+    help='Force flag needed to force reboot the instances')
 
-def reboot_instances(project):
+def reboot_instances(project,force):
     "Reboot instances"
 
     instances=filter_instances(project)
-
-    for i in instances:
-        if i.state['Name']=='running':
-            print('Rebooting {0} '.format(i.id))
-            i.reboot()
-        elif i.state['Name']!='running':
-            print('The instance {0} is not in running state for it to be restarted'.format(i.id))
-
+    if force:
+        for i in instances:
+            if i.state['Name']=='running':
+                print('Rebooting {0} '.format(i.id))
+                i.reboot()
+            elif i.state['Name']!='running':
+                print('The instance {0} is not in running state for it to be restarted'.format(i.id))
+    else:print('Force command needed to reboot instances')
     return
 
 
