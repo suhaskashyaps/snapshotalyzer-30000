@@ -86,30 +86,32 @@ def instance():
 @instance.command('snapshot', help="Only instances for project(tag Project:<name>)")
 @click.option('--project', default=None,
     help='Only instances for project(tag Project: <name>)')
-def create_snapshots(project):
+@click.option('--force',default=False, is_flag=True,
+    help='Force flag needed to force stop the instances')
+def create_snapshots(project,force):
     "Create snapshots for Ec2 instances"
 
     instances= filter_instances(project)
+    if force:
+        for i in instances:
+            print("Stopping {0}".format(i.id))
 
-    for i in instances:
-        print("Stopping {0}".format(i.id))
+            i.stop()
+            i.wait_until_stopped()
+            for v in i.volumes.all():
+                if has_pending_snapshot(v):
+                    print("Skipping snapshot of {0}. ". format(v.id) )
+                    continue
+                print("Creating snapshot of {0}".format(v.id))
+                v.create_snapshot(Description="Created by Snapshotalyzer 30000")
 
-        i.stop()
-        i.wait_until_stopped()
-        for v in i.volumes.all():
-            if has_pending_snapshot(v):
-                print("Skipping snapshot of {0}. ". format(v.id) )
-                continue
-            print("Creating snapshot of {0}".format(v.id))
-            v.create_snapshot(Description="Created by Snapshotalyzer 30000")
+            print("Starting {0}".format(i.id))
 
-        print("Starting {0}".format(i.id))
+            i.start()
+            i.wait_until_running()
 
-        i.start()
-        i.wait_until_running()
-
-    print("Job's done !")
-
+            print("Job's done !")
+    else:print('Force option needs to be enabled to create snapshot')
     return
 
 @instance.command('list')
