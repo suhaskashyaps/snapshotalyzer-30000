@@ -152,18 +152,22 @@ def stop_instances(project):
 @instance.command('start')
 @click.option('--project', default=None,
     help='Only instances for project')
-def start_instances(project):
-    "Stop EC2 instances"
+@click.option('--force',default=False, is_flag=True,
+    help='Force flag needed to force start the instances')
+def start_instances(project,force):
+    "Start EC2 instances"
 
     instances= filter_instances(project)
-
-    for i in instances:
-        print("starting {0}...".format(i.id))
-        try:
-            i.start()
-        except botocore.exceptions.ClientError as e:
-            print("Could not start {0}. ".format(i.id) + str(e))
-            continue
+    if force:
+        for i in instances:
+            print("starting {0}...".format(i.id))
+            try:
+                i.start()
+            except botocore.exceptions.ClientError as e:
+                print("Could not start {0}. ".format(i.id) + str(e))
+                continue
+    else:
+        print('Force flag needs to be enabled to force start EC2 instances')
 
 
     return
@@ -179,11 +183,11 @@ def reboot_instances(project):
 
     for i in instances:
         if i.state['Name']=='running':
-            print('Rebooting {0}. '.format(i.id))
+            print('Rebooting {0} '.format(i.id))
             i.reboot()
         elif i.state['Name']!='running':
-            print('The instance {0}. is not in running state for it to be restarted'.format(i.id))
-            continue
+            print('The instance {0} is not in running state for it to be restarted'.format(i.id))
+
     return
 
 
