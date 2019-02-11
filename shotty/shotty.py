@@ -134,18 +134,22 @@ def list_instances(project):
 @instance.command('stop')
 @click.option('--project', default=None,
     help='Only instances for project')
-def stop_instances(project):
+@click.option('--force',default=False, is_flag=True,
+    help='Force flag needed to force stop the instances')
+def stop_instances(project,force):
     "Stop EC2 instances"
 
     instances= filter_instances(project)
-
-    for i in instances:
-        print("stopping {0}...".format(i.id))
-        try:
-            i.stop()
-        except botocore.exceptions.ClientError as e:
-            print("Could not stop {0}. ".format(i.id) + str(e))
-            continue
+    if force:
+        for i in instances:
+            print("stopping {0}...".format(i.id))
+            try:
+                i.stop()
+            except botocore.exceptions.ClientError as e:
+                print("Could not stop {0}. ".format(i.id) + str(e))
+                continue
+    else:
+        print("Force flag needs to be enabled to stop instances")
 
     return
 
