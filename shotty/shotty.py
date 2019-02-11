@@ -168,6 +168,24 @@ def start_instances(project):
 
     return
 
+@instance.command('reboot')
+@click.option('--project', default=None,
+    help='Only instances for project')
+
+def reboot_instances(project):
+    "Reboot instances"
+
+    instances=filter_instances(project)
+
+    for i in instances:
+        if i.state['Name']=='running':
+            print('Rebooting {0}. '.format(i.id))
+            i.reboot()
+        elif i.state['Name']!='running':
+            print('The instance {0}. is not in running state for it to be restarted'.format(i.id))
+            continue
+    return
+
 
 if __name__=='__main__':
     cli()
